@@ -3,7 +3,7 @@ from mininet.node import OVSSwitch
 from mininet.topo import Topo
 from mininet.cli import CLI
 from mininet.log import setLogLevel, info
-import networkx as nx
+from collections import deque
 
 NODE_IDS = {'u':1,'v':2,'w':3,'x':4,'y':5,'z':6}
 EDGES = [
@@ -32,27 +32,43 @@ class MyTopo(Topo):
             self.link_map[(a, b)] = ia
             self.link_map[(b, a)] = ib
 
+def bfs_paths(graph, start, goal):
+    """Return shortest path from start to goal using BFS."""
+    queue = deque([(start, [start])])
+    visited = set()
+    while queue:
+        (vertex, path) = queue.popleft()
+        if vertex == goal:
+            return path
+        if vertex not in visited:
+            visited.add(vertex)
+            for neighbor in graph[vertex]:
+                queue.append((neighbor, path + [neighbor]))
+    return None
+
 def add_static_routes(net, topo):
     info("*** Computing shortest paths and installing routes\n")
 
-    # Build graph
-    G = nx.Graph()
-    G.add_edges_from(EDGES)
+    # Build adjacency list
+    graph = {node: [] for node in NODE_IDS}
+    for a, b in EDGES:
+        graph[a].append(b)
+        graph[b].append(a)
 
     # For each source host
     for src in NODE_IDS:
         src_host = net.get(src)
 
-        # For each destination host
         for dst in NODE_IDS:
             if src == dst:
                 continue
 
-            # Compute shortest path
-            path = nx.shortest_path(G, src, dst)
-            next_hop = path[1]  # immediate neighbor
+            path = bfs_paths(graph, src, dst)
+            if not path or len(path) < 2:
+                continue
 
-            # Determine gateway IP of next_hop on src–next_hop link
+            next_hop = path[1]
+
             ida, idb = NODE_IDS[src], NODE_IDS[next_hop]
             low, high = sorted((ida, idb))
             subnet = f"172.16.{low}{high}"
@@ -61,10 +77,8 @@ def add_static_routes(net, topo):
             else:
                 gw = f"{subnet}.1"
 
-            # Pick one IP of the destination (any interface works)
             dst_id = NODE_IDS[dst]
-            # choose lowest-ID neighbor of dst for deterministic IP
-            neigh = min(G.neighbors(dst), key=lambda n: NODE_IDS[n])
+            neigh = min(graph[dst], key=lambda n: NODE_IDS[n])
             low2, high2 = sorted((dst_id, NODE_IDS[neigh]))
             subnet2 = f"172.16.{low2}{high2}"
             if dst_id < NODE_IDS[neigh]:
@@ -72,7 +86,6 @@ def add_static_routes(net, topo):
             else:
                 dip = f"{subnet2}.2"
 
-            # Install route
             cmd = f"ip route add {dip} via {gw}"
             src_host.cmd(cmd)
             info(f"{src}: route to {dst} ({dip}) via {next_hop} ({gw})\n")
