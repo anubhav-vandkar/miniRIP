@@ -77,11 +77,12 @@ def add_static_routes(net, topo):
             else:
                 gw = f"{subnet}.1"
 
-            dst_id = NODE_IDS[dst]
-            neigh = min(graph[dst], key=lambda n: NODE_IDS[n])
-            low2, high2 = sorted((dst_id, NODE_IDS[neigh]))
+            prev_hop = path[-2]  # node before dst
+            id_dst = NODE_IDS[dst]
+            id_prev = NODE_IDS[prev_hop]
+            low2, high2 = sorted((id_dst, id_prev))
             subnet2 = f"172.16.{low2}{high2}"
-            if dst_id < NODE_IDS[neigh]:
+            if id_dst < id_prev:
                 dip = f"{subnet2}.1"
             else:
                 dip = f"{subnet2}.2"
