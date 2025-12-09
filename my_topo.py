@@ -5,7 +5,7 @@ from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 from collections import deque
 
-NODE_IDS = {'u':1,'v':2,'w':3,'x':4,'y':5,'z':6}
+NODE_IDS = {'u':1,'v':2,'x':4,'w':3,'y':5,'z':6}
 EDGES = [
     ('u','x'),
     ('v','w'),
