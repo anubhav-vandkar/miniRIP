@@ -8,18 +8,18 @@ NODE_IDS = {
     'u': 1,
     'v': 2,
     'w': 3,
-    'X': 4,
+    'x': 4,
     'y': 5,
     'z': 6
 }
 
 EDGES = [
     ('u', 'v'),
-    ('u', 'X'),
+    ('u', 'x'),
     ('v', 'w'),
-    ('v', 'X'),
-    ('X', 'y'),
-    ('X', 'w'),
+    ('v', 'x'),
+    ('x', 'y'),
+    ('x', 'w'),
     ('w', 'y'),
     ('w', 'z'),
     ('y', 'z'),
@@ -40,11 +40,11 @@ class MyTopo(Topo):
         self.link_map = {}
 
         for a, b in EDGES:
-            a_idX = self.ifaces[a]
-            b_idX = self.ifaces[b]
+            a_idx = self.ifaces[a]
+            b_idx = self.ifaces[b]
 
-            intfA = f"{a}-eth{a_idX}"
-            intfB = f"{b}-eth{b_idX}"
+            intfA = f"{a}-eth{a_idx}"
+            intfB = f"{b}-eth{b_idx}"
 
             self.addLink(a, b, intfName1=intfA, intfName2=intfB)
 
