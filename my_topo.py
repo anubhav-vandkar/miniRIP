@@ -7,7 +7,6 @@ from collections import deque
 
 NODE_IDS = {'u':1,'v':2,'w':3,'x':4,'y':5,'z':6}
 EDGES = [
-    ('u','v'),
     ('u','x'),
     ('v','w'),
     ('v','x'),
@@ -15,7 +14,8 @@ EDGES = [
     ('x','w'),
     ('w','y'),
     ('w','z'),
-    ('y','z'),
+    ('u','v'),
+    ('y','z')
 ]
 
 class MyTopo(Topo):
