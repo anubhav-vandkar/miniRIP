@@ -85,9 +85,27 @@ if __name__ == "__main__":
 
     info("*** Testing DIRECT neighbor connectivity\n")
     for a, b in EDGES:
+        ida = NODE_IDS[a]
+        idb = NODE_IDS[b]
+        low, high = sorted((ida, idb))
+        subnet = f"172.16.{low}{high}"
+
+        # a's neighbor IP
+        if ida < idb:
+            target_for_a = f"{subnet}.2"
+            target_for_b = f"{subnet}.1"
+        else:
+            target_for_a = f"{subnet}.1"
+            target_for_b = f"{subnet}.2"
+
         na = net.get(a)
         nb = net.get(b)
-        print(f"Testing {a} -> {b}: ", na.cmd(f"ping -c1 -W1 {nb.IP()}"))
+
+        print(f"{a} -> {b}:")
+        print(na.cmd(f"ping -c1 -W1 {target_for_a}"))
+
+        print(f"{b} -> {a}:")
+        print(nb.cmd(f"ping -c1 -W1 {target_for_b}"))
 
     info("*** Testing full pingAll (multi-hop will fail without routing)\n")
     net.pingAll()
