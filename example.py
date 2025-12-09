@@ -40,6 +40,7 @@ if __name__ == '__main__':
     # Test connectivity
     info("*** Testing connectivity from h1 to h2\n")
     print(r1.cmd('ip addr'))
+    print(h2.cmd('ip addr'))
     print(h1.cmd('ping -c 3 10.0.1.1'))
 
     CLI(net)
