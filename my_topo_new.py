@@ -22,37 +22,27 @@ EDGES = [
 
 class MyTopo(Topo):
     def build(self):
-        # Add router-nodes as hosts
-        for name in NODE_IDS:
-            self.addHost(name)
 
-        # We will SHORT-CIRCUIT interface naming — the simplest safe method:
-        # Every time we add a link, we assign the lowest free ethN on each host.
-        self.ifaces = { n:0 for n in NODE_IDS }
+        for router in NODE_IDS:
+            self.addHost(router)
 
-        # Store mapping: (a,b) → (a-iface, b-iface)
+        self.ifidx = { h: 0 for h in NODE_IDS }
+
         self.link_map = {}
 
         for a, b in EDGES:
-            a_idx = self.ifaces[a]
-            b_idx = self.ifaces[b]
+            a_eth = f"{a}-eth{self.ifidx[a]}"
+            b_eth = f"{b}-eth{self.ifidx[b]}"
 
-            intfA = f"{a}-eth{a_idx}"
-            intfB = f"{b}-eth{b_idx}"
+            self.addLink(a, b, intfName1=a_eth, intfName2=b_eth)
 
-            self.addLink(a, b, intfName1=intfA, intfName2=intfB)
+            self.link_map[(a, b)] = (a_eth, b_eth)
 
-            # Store mapping for later IP assignment
-            self.link_map[(a, b)] = (intfA, intfB)
-            self.link_map[(b, a)] = (intfB, intfA)
-
-            # Increment interface counters
-            self.ifaces[a] += 1
-            self.ifaces[b] += 1
-
+            self.ifidx[a] += 1
+            self.ifidx[b] += 1
 
 def assign_ips(net, topo):
-    info("*** Assigning IPs to interfaces\n")
+    info("*** Assigning IPs (/30 per link)\n")
 
     for a, b in EDGES:
         ida = NODE_IDS[a]
@@ -60,21 +50,18 @@ def assign_ips(net, topo):
         low, high = sorted((ida, idb))
         subnet = f"172.16.{low}{high}"
 
-        # IP of each router on that link
-        ipa = f"{subnet}.{ida}/24"
-        ipb = f"{subnet}.{idb}/24"
+        ipA = f"{subnet}.1/30"
+        ipB = f"{subnet}.2/30"
 
         intfA, intfB = topo.link_map[(a, b)]
 
-        info(f"{a}: {intfA} -> {ipa}\n")
-        net.get(a).cmd(f"ip addr add {ipa} dev {intfA}")
+        info(f"{a}: {intfA} <- {ipA}\n")
+        net.get(a).cmd(f"ip addr add {ipA} dev {intfA}")
         net.get(a).cmd(f"ip link set {intfA} up")
-        net.get(a).cmd(f"ip link set {intfA} mtu 1500")
 
-        info(f"{b}: {intfB} -> {ipb}\n")
-        net.get(b).cmd(f"ip addr add {ipb} dev {intfB}")
+        info(f"{b}: {intfB} <- {ipB}\n")
+        net.get(b).cmd(f"ip addr add {ipB} dev {intfB}")
         net.get(b).cmd(f"ip link set {intfB} up")
-        net.get(b).cmd(f"ip link set {intfB} mtu 1500")
 
 
 if __name__ == '__main__':
@@ -82,10 +69,9 @@ if __name__ == '__main__':
     topo = MyTopo()
     net = Mininet(topo=topo, switch=OVSSwitch, controller=None)
     net.start()
-
     assign_ips(net, topo)
 
-    info("*** Testing connectivity (pingAll)\n")
+    info("\n*** Connectivity Test\n")
     net.pingAll()
 
     CLI(net)
