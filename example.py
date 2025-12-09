@@ -20,7 +20,7 @@ if __name__ == '__main__':
     topo = MyTopo()
     net = Mininet(topo=topo, switch=OVSSwitch, controller=None)
     net.start()
-
+    # Assign IPs
     h1 = net.get('h1')
     h2 = net.get('h2')
     r1 = net.get('r1')
@@ -31,7 +31,7 @@ if __name__ == '__main__':
     r1.cmd('ifconfig r1-eth1 10.0.1.254/24')
     h2.cmd('ifconfig h2-eth0 10.0.1.1/24')
 
-    # Enable IP forwarding on r1
+    # Enable IP forwarding
     r1.cmd('sysctl -w net.ipv4.ip_forward=1')
 
     # Add routes
@@ -39,10 +39,11 @@ if __name__ == '__main__':
     h2.cmd('ip route add default via 10.0.1.254')
 
     # Test connectivity
-    info("*** Testing connectivity from h1 to h2\n")
+    print(h1.cmd('ping -c 3 10.0.1.1'))
+    print(h1.cmd('ip addr'))
     print(r1.cmd('ip addr'))
     print(h2.cmd('ip addr'))
-    print(h1.cmd('ping -c 3 10.0.1.1'))
+    print(r1.cmd('ping -c 3 10.0.1.1'))
 
     CLI(net)
     net.stop()
