@@ -30,20 +30,15 @@ class MyTopo(Topo):
         for name in NODE_IDS:
             self.addHost(name)
 
-        self.ifaces = {n: 0 for n in NODE_IDS}
         self.link_map = {}
 
-        for a, b in EDGES:
-            self.ifaces[a] += 1
-            self.ifaces[b] += 1
+        for i, (a, b) in enumerate(EDGES):
+            sw = self.addSwitch(f"s{i}")   # unique switch per edge
+            self.addLink(a, sw)
+            self.addLink(b, sw)
 
-            intfA = f"{a}-eth{self.ifaces[a]}"
-            intfB = f"{b}-eth{self.ifaces[b]}"
-
-            self.addLink(a, b, intfName1=intfA, intfName2=intfB)
-
-            self.link_map[(a, b)] = (intfA, intfB)
-            self.link_map[(b, a)] = (intfB, intfA)
+            self.link_map[(a, b)] = sw
+            self.link_map[(b, a)] = sw
             
 def assign_ips(net, topo):
     info("*** Assigning IPs (/30 per link)\n")
