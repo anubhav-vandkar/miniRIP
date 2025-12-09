@@ -1,6 +1,7 @@
 from mininet.net import Mininet
 from mininet.node import Host, OVSSwitch
 from mininet.topo import Topo
+from mininet.cli import CLI
 
 class MyTopo( Topo ):
     def build( self ):
@@ -28,10 +29,22 @@ class MyTopo( Topo ):
 
 if __name__ == '__main__':
     topo = MyTopo()
-    net = Mininet( topo=topo, switch=OVSSwitch, controller=None )
+    net = Mininet(topo=topo, switch=OVSSwitch, controller=None)
     net.start()
 
+    # Now you can get the actual Host objects
+    r1 = net.get('r1')
     h1 = net.get('h1')
+    h2 = net.get('h2')
+
+    # Configure routing
+    r1.cmd('sysctl -w net.ipv4.ip_forward=1')
+    r1.cmd('ip route add 10.0.1.0/24 dev r1-eth1')
+    h1.cmd('ip route add default via 10.0.0.254')
+    h2.cmd('ip route add default via 10.0.1.254')
+
+    # Test connectivity
     h1.cmd('ping -c 1 10.0.1.1')
 
+    CLI(net)
     net.stop()
