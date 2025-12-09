@@ -5,15 +5,15 @@ from mininet.cli import CLI
 from mininet.log import setLogLevel, info
 from collections import deque
 
-NODE_IDS = {'u':1,'v':2,'x':4,'w':3,'y':5,'z':6}
+NODE_IDS = {'u':1,'v':2,'ex':4,'w':3,'y':5,'z':6}
 EDGES = [
-    ('u','x'),
+    ('u','ex'),
     ('u','v'),
     ('u','w'),
     ('v','w'),
-    ('v','x'),
-    ('x','y'),
-    ('x','w'),
+    ('v','ex'),
+    ('ex','y'),
+    ('ex','w'),
     ('w','y'),
     ('w','z'),
     ('y','z')
