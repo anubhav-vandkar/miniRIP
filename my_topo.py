@@ -146,5 +146,8 @@ if __name__ == '__main__':
     add_static_routes(net, topo)
     net.pingAll()
 
+    print(net.get('x').cmd("ip -br addr"))
+    print(net.get('x').cmd("ip link"))
+
     CLI(net)
     net.stop()
