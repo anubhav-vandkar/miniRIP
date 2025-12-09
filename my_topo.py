@@ -55,37 +55,30 @@ class MyTopo(Topo):
             self.ifaces[b] += 1
             
 def assign_ips(net, topo):
-    info("*** Assigning IPs to interfaces\n")
+    info("*** Assigning IPs (/30 per link)\n")
 
     for a, b in EDGES:
         ida = NODE_IDS[a]
         idb = NODE_IDS[b]
         low, high = sorted((ida, idb))
-        subnet = f"172.16.{low}{high}"
 
-        ipa = f"{subnet}.{ida}/24"
-        ipb = f"{subnet}.{idb}/24"
+        # Each link gets a /30
+        subnet = f"172.16.{low}{high}"
+        ipa = f"{subnet}.1/30"
+        ipb = f"{subnet}.2/30"
 
         intfA, intfB = topo.link_map[(a, b)]
 
-        # Bring loopback up (required on user-mode OVS)
         net.get(a).cmd("ip link set lo up")
         net.get(b).cmd("ip link set lo up")
 
-        # Disable NIC offloading
-        net.get(a).cmd(f"ethtool --offload {intfA} rx off tx off tso off gso off gro off lro off")
-        net.get(b).cmd(f"ethtool --offload {intfB} rx off tx off tso off gso off gro off lro off")
-
-        # Assign IPs
         info(f"{a}: {intfA} -> {ipa}\n")
         net.get(a).cmd(f"ip addr add {ipa} dev {intfA}")
         net.get(a).cmd(f"ip link set {intfA} up")
-        net.get(a).cmd(f"ip link set {intfA} mtu 1500")
 
         info(f"{b}: {intfB} -> {ipb}\n")
         net.get(b).cmd(f"ip addr add {ipb} dev {intfB}")
         net.get(b).cmd(f"ip link set {intfB} up")
-        net.get(b).cmd(f"ip link set {intfB} mtu 1500")
 
 if __name__ == '__main__':
     setLogLevel('info')
