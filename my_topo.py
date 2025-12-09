@@ -77,12 +77,11 @@ if __name__ == '__main__':
     assign_ips_and_up(net, topo)
     check_neighbors(net, topo)  # 1-hop only; no forwarding/routes yet
 
-    # Visibility to catch misbindings
-    for n in NODE_IDS:
-        print(f"\n=== {n} ===")
-        print(net.get(n).cmd("ip -br addr"))
-        print(net.get(n).cmd("ip link"))
-        print(net.get(n).cmd("arp -n"))
+    # for n in NODE_IDS:
+    #     print(f"\n=== {n} ===")
+    #     print(net.get(n).cmd("ip -br addr"))
+    #     print(net.get(n).cmd("ip link"))
+    #     print(net.get(n).cmd("arp -n"))
 
     CLI(net)
     net.stop()
