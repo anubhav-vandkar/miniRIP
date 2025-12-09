@@ -80,6 +80,7 @@ if __name__ == '__main__':
     assign_ips(net, topo)
 
     print("testing the output for x")
+    print(net.get('x').intfList())
     print(net.get('x').cmd('ip -br addr'))
 
     info("*** Testing connectivity (pingAll)\n")
