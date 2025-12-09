@@ -26,6 +26,7 @@ if __name__ == '__main__':
     r1 = net.get('r1')
 
     # Assign IPs
+    h1.cmd('ifconfig h1-eth0 10.0.0.1/24')
     r1.cmd('ifconfig r1-eth0 10.0.0.254/24')
     r1.cmd('ifconfig r1-eth1 10.0.1.254/24')
     h2.cmd('ifconfig h2-eth0 10.0.1.1/24')
