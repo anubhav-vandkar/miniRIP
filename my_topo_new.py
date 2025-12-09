@@ -83,6 +83,12 @@ if __name__ == "__main__":
 
     assign_ips(net)
 
+    info("*** Testing neighbor connectivity\n")
+    for a,b in EDGES:
+        h = net.get(a)
+        print(h.cmd(f"ping -c1 172.16.{min(NODE_IDS[a],NODE_IDS[b])}{max(NODE_IDS[a],NODE_IDS[b])}.{NODE_IDS[b]}"))
+
+
     info("*** Testing DIRECT neighbor connectivity\n")
     for a, b in EDGES:
         ida = NODE_IDS[a]
