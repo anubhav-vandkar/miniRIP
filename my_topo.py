@@ -88,6 +88,8 @@ if __name__ == '__main__':
 
     assign_ips(net, topo)
 
+    net.get('X').cmd('ip -br addr')
+
     info("*** Testing connectivity (pingAll)\n")
     net.pingAll()
 
