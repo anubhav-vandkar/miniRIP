@@ -8,13 +8,14 @@ from collections import deque
 NODE_IDS = {'u':1,'v':2,'x':4,'w':3,'y':5,'z':6}
 EDGES = [
     ('u','x'),
+    ('u','v'),
+    ('u','w'),
     ('v','w'),
     ('v','x'),
     ('x','y'),
     ('x','w'),
     ('w','y'),
     ('w','z'),
-    ('u','v'),
     ('y','z')
 ]
 
