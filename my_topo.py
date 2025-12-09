@@ -19,12 +19,11 @@ EDGES = [
 
 class MyTopo(Topo):
     def build(self):
+        # Add hosts
         for name in NODE_IDS:
             self.addHost(name)
-
-        # Store actual host-side interface names for each edge direction
-        self.link_map = {}  # (a,b) -> iface on a that connects to b
-
+        # Direct host-host links with explicit, unique names
+        self.link_map = {}  # (a,b) -> iface on 'a' connected to 'b'
         for i, (a, b) in enumerate(EDGES):
             ia = f"{a}-e{i}"
             ib = f"{b}-e{i}"
@@ -44,7 +43,7 @@ def assign_ips_and_up(net, topo):
         ia = topo.link_map[(a, b)]
         ib = topo.link_map[(b, a)]
 
-        # Clean + assign + up
+        # Flush and assign IPs to the correct interfaces
         net.get(a).cmd(f"ip addr flush dev {ia}")
         net.get(b).cmd(f"ip addr flush dev {ib}")
         net.get(a).cmd(f"ip addr add {ipa} dev {ia}")
@@ -52,9 +51,9 @@ def assign_ips_and_up(net, topo):
         net.get(a).cmd(f"ip link set {ia} up")
         net.get(b).cmd(f"ip link set {ib} up")
 
-        # Optional: ensure ARP learns neighbor quickly
-        net.get(a).cmd(f"arp -s {ipb[:-3]} $(cat /sys/class/net/{ia}/address)")
-        net.get(b).cmd(f"arp -s {ipa[:-3]} $(cat /sys/class/net/{ib}/address)")
+        # IMPORTANT: remove any static ARP hacks (they break neighbor discovery)
+        net.get(a).cmd(f"ip neigh flush dev {ia}")
+        net.get(b).cmd(f"ip neigh flush dev {ib}")
 
         info(f"{a}: {ia} -> {ipa} | {b}: {ib} -> {ipb}\n")
 
@@ -76,15 +75,14 @@ if __name__ == '__main__':
     net.start()
 
     assign_ips_and_up(net, topo)
+    check_neighbors(net, topo)  # 1-hop only; no forwarding/routes yet
 
-    # No forwarding, no routes yet — just test neighbor reachability
-    check_neighbors(net, topo)
-
-    # Quick visibility
+    # Visibility to catch misbindings
     for n in NODE_IDS:
         print(f"\n=== {n} ===")
         print(net.get(n).cmd("ip -br addr"))
-        print(net.get(n).cmd("ip route"))
+        print(net.get(n).cmd("ip link"))
+        print(net.get(n).cmd("arp -n"))
 
     CLI(net)
     net.stop()
