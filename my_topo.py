@@ -25,11 +25,6 @@ EDGES = [
     ('y', 'z'),
 ]
 
-class OVSUserSwitch(OVSSwitch):
-    def __init__(self, *args, **kwargs):
-        kwargs['datapath'] = 'user'
-        super().__init__(*args, **kwargs)
-
 class MyTopo(Topo):
     def build(self):
         for name in NODE_IDS:
@@ -83,14 +78,13 @@ def assign_ips(net, topo):
 if __name__ == '__main__':
     setLogLevel('info')
     topo = MyTopo()
-    net = Mininet(topo=topo, switch=OVSUserSwitch, controller=None)
+    net = Mininet(topo=topo, switch=OVSSwitch, controller=None)
     net.start()
 
     assign_ips(net, topo)
 
-    output = net.get('x').cmd('ip -br addr')
     print("testing the output for x")
-    print(output)
+    print(net.get('x').cmd('ip -br addr'))
 
     info("*** Testing connectivity (pingAll)\n")
     net.pingAll()
