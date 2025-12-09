@@ -30,6 +30,8 @@ if __name__ == '__main__':
     topo = MyTopo()
     net = Mininet( topo=topo, switch=OVSSwitch, controller=None )
     net.start()
-    # You can now test connectivity and routing
-    # h1.cmd('ping -c 1 10.0.1.1')
+
+    h1 = net.get('h1')
+    h1.cmd('ping -c 1 10.0.1.1')
+
     net.stop()
