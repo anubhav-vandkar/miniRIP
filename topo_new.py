@@ -48,9 +48,14 @@ def assign_ips(net):
         intfA = intfA.name
         intfB = intfB.name
 
-        subnet = f"10.0.{i}.0/30"
-        ipa = f"10.0.{i}.1/30"
-        ipb = f"10.0.{i}.2/30"
+        ida = NODE_IDS[a]
+        idb = NODE_IDS[b]
+
+        lo,hi = sorted([ida,idb])
+        subnet = f"172.16.{lo}{hi}"
+
+        ipa = f"{subnet}.{ida}/24"
+        ipb = f"{subnet}.{idb}/24"
 
         ha.cmd(f"ip addr flush dev {intfA}")
         hb.cmd(f"ip addr flush dev {intfB}")
