@@ -33,14 +33,20 @@ class MyTopo(Topo):
         for a,b in EDGES:
             self.addLink(a,b)
 
+def bring_up_all_interfaces(net):
+    for host in net.hosts:
+        for intf in host.intfList():
+            if str(intf) != 'lo':
+                host.cmd(f"ip link set {intf.name} up")
+
 def assign_ips(net):
-    for a,b in EDGES:
+    for i, (a, b) in enumerate(EDGES):
         ha = net.get(a)
         hb = net.get(b)
 
-        # Get actual Mininet interface names
-        intfA = ha.connectionsTo(hb)[0][0].name
-        intfB = ha.connectionsTo(hb)[0][1].name
+        intfA, intfB = ha.connectionsTo(hb)[0]
+        intfA = intfA.name
+        intfB = intfB.name
 
         ida = NODE_IDS[a]
         idb = NODE_IDS[b]
@@ -51,13 +57,15 @@ def assign_ips(net):
         ipa = f"{subnet}.{ida}/24"
         ipb = f"{subnet}.{idb}/24"
 
+        ha.cmd(f"ip addr flush dev {intfA}")
+        hb.cmd(f"ip addr flush dev {intfB}")
         ha.cmd(f"ip addr add {ipa} dev {intfA}")
         hb.cmd(f"ip addr add {ipb} dev {intfB}")
-
         ha.cmd(f"ip link set {intfA} up")
         hb.cmd(f"ip link set {intfB} up")
 
         info(f"{a}-{b}: {intfA}={ipa}, {intfB}={ipb}\n")
+
 
 if __name__ == "__main__":
     setLogLevel('info')
@@ -66,6 +74,12 @@ if __name__ == "__main__":
     net.start()
 
     assign_ips(net)
+
+    bring_up_all_interfaces(net)
+
+    for h in net.hosts:
+        h.cmd("sysctl -w net.ipv4.ip_forward=1")
+        print(h.name, h.cmd("ip -br addr"))
 
     info("\n* Immediate neighbor tests should PASS\n")
     for a,b in EDGES:
