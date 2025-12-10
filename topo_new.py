@@ -81,14 +81,6 @@ if __name__ == "__main__":
         h.cmd("sysctl -w net.ipv4.ip_forward=1")
         print(h.name, h.cmd("ip -br addr"))
 
-    # print(net.get('w').cmd("ip link"))
-
-    # print(net.get('u').cmd("ping -c1 10.0.0.2"))  # ping ex on edge 0
-    # print(net.get('v').cmd("ping -c1 10.0.1.2"))  # ping w on edge 1
-    # print(net.get('v').cmd("ping -c1 10.0.2.2"))  # ping w
-    # print(net.get('w').cmd("ping -c1 10.0.2.1"))  # ping v
-
-
     info("\n* Immediate neighbor tests should PASS\n")
     for a,b in EDGES:
         ida,idb = NODE_IDS[a], NODE_IDS[b]

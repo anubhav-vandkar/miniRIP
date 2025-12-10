@@ -15,7 +15,8 @@ import select
 import struct
 import fcntl
 import subprocess
-#import netifaces
+
+from weights import WEIGHTS
 
 MADDR = '224.0.0.9'
 MPORT = 520		# used as both source and destination port
@@ -39,9 +40,14 @@ MODTABLES = True
 header word: command(1), version(1), zero(2). As bytes: [2,2,0,0]
 rip_entry: AF(2), route_tag(2), IP_addr(4), mask(4), next_hop(4), metric(4)
 """
-
-
 # arriving RIPv2 messages are parsed into class RipEntry objects
+def weight(a,b):
+    if (a,b) in WEIGHTS:
+        return WEIGHTS[(a,b)]
+    
+    if (b,a) in WEIGHTS:
+        return WEIGHTS[(b,a)]
+    return 1
 
 class RipEntry:
     def __init__(self, af, tag, ipaddr, mask, nexthop, metric):
@@ -199,7 +205,7 @@ def update_tables(riplist, update_sender):
             TVal = RTable[TK]
             currentcost = TVal.metric()
             currentnexthop = TVal.nexthop()
-            newcost = entry.metric() + 1
+            newcost = entry.metric() + weight(update_sender, ipaddr)
             if newcost < currentcost:		# lower-cost route
                 interface = None
                 RTable[TK] = TableValue(interface, update_sender, newcost)
@@ -214,7 +220,7 @@ def update_tables(riplist, update_sender):
                 if MODTABLES: subprocess.call(call_list)
         else:		# this is a new destination
            interface = None
-           cost = entry.metric() + 1
+           cost = newcost = entry.metric() + weight(update_sender, ipaddr)
            RTable[TK] = TableValue(interface, update_sender, cost)
            call_list = ['/sbin/route', 'add', '-net', ipaddr, 'netmask', netmask, 'gw', update_sender]
            print ('adding route to new destination {}/{}'.format(ipaddr, slash(aton(netmask))))
