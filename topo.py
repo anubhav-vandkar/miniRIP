@@ -29,23 +29,24 @@ EDGES = [
 
 class MyTopo(Topo):
     def build(self):
-        # Add routers as hosts
         for n in NODE_IDS:
             self.addHost(n)
-        # Direct point-to-point links
         for a,b in EDGES:
-            self.addLink(a, b)
+            self.addLink(a,b)
 
 def assign_ips(net):
     for a,b in EDGES:
-        ha, hb = net.get(a), net.get(b)
+        ha = net.get(a)
+        hb = net.get(b)
 
+        # Get actual Mininet interface names
         intfA = ha.connectionsTo(hb)[0][0].name
         intfB = ha.connectionsTo(hb)[0][1].name
 
-        ida, idb = NODE_IDS[a], NODE_IDS[b]
-        lo, hi = sorted([ida,idb])
+        ida = NODE_IDS[a]
+        idb = NODE_IDS[b]
 
+        lo,hi = sorted([ida,idb])
         subnet = f"172.16.{lo}{hi}"
 
         ipa = f"{subnet}.{ida}/24"
@@ -67,12 +68,12 @@ if __name__ == "__main__":
 
     assign_ips(net)
 
-    info("\n*** Testing p2p adjacencies\n")
+    info("\n* Immediate neighbor tests should PASS\n")
     for a,b in EDGES:
         ida,idb = NODE_IDS[a], NODE_IDS[b]
         lo,hi = sorted([ida,idb])
-        target = f"172.16.{lo}{hi}.{idb}"
-        print(net.get(a).cmd(f"ping -c1 {target}"))
+        ip = f"172.16.{lo}{hi}.{idb}"
+        print(net.get(a).cmd(f"ping -c1 {ip}"))
 
     CLI(net)
     net.stop()
