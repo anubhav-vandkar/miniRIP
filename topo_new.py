@@ -73,6 +73,7 @@ if __name__ == "__main__":
     bring_up_all_interfaces(net)
 
     for h in net.hosts:
+        h.cmd("sysctl -w net.ipv4.ip_forward=1")
         print(h.name, h.cmd("ip -br addr"))
 
     print(net.get('w').cmd("ip link"))
