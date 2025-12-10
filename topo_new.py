@@ -46,6 +46,8 @@ def assign_ips(net):
         ipa = f"10.0.{i}.1/30"
         ipb = f"10.0.{i}.2/30"
 
+        ha.cmd(f"ip addr flush dev {intfA}")
+        hb.cmd(f"ip addr flush dev {intfB}")
         ha.cmd(f"ip addr add {ipa} dev {intfA}")
         hb.cmd(f"ip addr add {ipb} dev {intfB}")
         ha.cmd(f"ip link set {intfA} up")
@@ -62,9 +64,8 @@ if __name__ == "__main__":
 
     assign_ips(net)
 
-    print(net.get('u').cmd("ip -br addr"))
-    print(net.get('ex').cmd("ip -br addr"))
-    print(net.get('v').cmd("ip -br addr"))
+    for h in net.hosts:
+        print(h.name, h.cmd("ip -br addr"))
 
     print(net.get('u').cmd("ping -c1 10.0.0.2"))  # ping ex on edge 0
     print(net.get('v').cmd("ping -c1 10.0.1.2"))  # ping w on edge 1
