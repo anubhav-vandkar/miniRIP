@@ -34,30 +34,25 @@ class MyTopo(Topo):
             self.addLink(a,b)
 
 def assign_ips(net):
-    for a,b in EDGES:
+    for i, (a, b) in enumerate(EDGES):
         ha = net.get(a)
         hb = net.get(b)
 
-        # Get actual Mininet interface names
-        intfA = ha.connectionsTo(hb)[0][0].name
-        intfB = ha.connectionsTo(hb)[0][1].name
+        intfA, intfB = ha.connectionsTo(hb)[0]
+        intfA = intfA.name
+        intfB = intfB.name
 
-        ida = NODE_IDS[a]
-        idb = NODE_IDS[b]
-
-        lo,hi = sorted([ida,idb])
-        subnet = f"172.16.{lo}{hi}"
-
-        ipa = f"{subnet}.{ida}/24"
-        ipb = f"{subnet}.{idb}/24"
+        subnet = f"10.0.{i}.0/30"
+        ipa = f"10.0.{i}.1/30"
+        ipb = f"10.0.{i}.2/30"
 
         ha.cmd(f"ip addr add {ipa} dev {intfA}")
         hb.cmd(f"ip addr add {ipb} dev {intfB}")
-
         ha.cmd(f"ip link set {intfA} up")
         hb.cmd(f"ip link set {intfB} up")
 
         info(f"{a}-{b}: {intfA}={ipa}, {intfB}={ipb}\n")
+
 
 if __name__ == "__main__":
     setLogLevel('info')
