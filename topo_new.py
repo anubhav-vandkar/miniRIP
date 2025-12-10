@@ -33,6 +33,12 @@ class MyTopo(Topo):
         for a,b in EDGES:
             self.addLink(a,b)
 
+def bring_up_all_interfaces(net):
+    for host in net.hosts:
+        for intf in host.intfList():
+            if str(intf) != 'lo':
+                host.cmd(f"ip link set {intf.name} up")
+
 def assign_ips(net):
     for i, (a, b) in enumerate(EDGES):
         ha = net.get(a)
@@ -64,11 +70,18 @@ if __name__ == "__main__":
 
     assign_ips(net)
 
+    bring_up_all_interfaces(net)
+
     for h in net.hosts:
         print(h.name, h.cmd("ip -br addr"))
 
+    print(net.get('w').cmd("ip link"))
+
     print(net.get('u').cmd("ping -c1 10.0.0.2"))  # ping ex on edge 0
     print(net.get('v').cmd("ping -c1 10.0.1.2"))  # ping w on edge 1
+    print(net.get('v').cmd("ping -c1 10.0.2.2"))  # ping w
+    print(net.get('w').cmd("ping -c1 10.0.2.1"))  # ping v
+
 
     # info("\n* Immediate neighbor tests should PASS\n")
     # for a,b in EDGES:
