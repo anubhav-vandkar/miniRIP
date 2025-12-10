@@ -48,8 +48,8 @@ def assign_ips(net):
         lo,hi = sorted([ida,idb])
         subnet = f"172.16.{lo}{hi}"
 
-        ipa = f"{subnet}.{ida}/30"
-        ipb = f"{subnet}.{idb}/30"
+        ipa = f"{subnet}.{ida}/24"
+        ipb = f"{subnet}.{idb}/24"
 
         ha.cmd(f"ip addr add {ipa} dev {intfA}")
         hb.cmd(f"ip addr add {ipb} dev {intfB}")
