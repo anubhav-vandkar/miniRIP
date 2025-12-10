@@ -75,4 +75,3 @@ if __name__ == "__main__":
         print(net.get(a).cmd(f"ping -c1 {ip}"))
 
     CLI(net)
-    net.stop()
